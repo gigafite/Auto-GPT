@@ -1,0 +1,712 @@
+<div class="roi-wrap">
+  <div class="roi-card">
+    <div class="roi-header">
+      <div class="roi-eyebrow">Vendor ROI Calculator</div>
+      <h2 class="roi-title">Model event pipeline, closed deals, and ARR per sponsorship tier</h2>
+      <p class="roi-subtitle">
+        Select your pricing model, demo booking rate, close rate, and whether you want to model one or two events.
+        This uses 175 MSP attendees per event, a 70 percent demo show rate, and projects deals into a pipeline over
+        six or twelve months. In a two event model, upgrading your sponsorship tier increases your second event demo rate.
+      </p>
+    </div>
+
+    <!-- INPUT GRID -->
+    <div class="roi-grid">
+      <div class="roi-field">
+        <label>Pricing model</label>
+        <select id="pricingModel">
+          <option value="per_seat">Per seat (endpoints)</option>
+          <option value="per_org">Per MSP organization (flat)</option>
+          <option value="per_tech">Per technician (internal MSP staff)</option>
+        </select>
+      </div>
+
+      <div class="roi-field" id="pricePerSeatField">
+        <label>Price per seat (monthly)</label>
+        <input id="pricePerSeat" type="number" inputmode="decimal" placeholder="e.g. 3.50">
+      </div>
+
+      <div class="roi-field roi-hidden" id="pricePerOrgField">
+        <label>Price per MSP organization (monthly)</label>
+        <input id="pricePerOrg" type="number" inputmode="decimal" placeholder="e.g. 499">
+      </div>
+
+      <div class="roi-field roi-hidden" id="pricePerTechField">
+        <label>Price per technician (monthly)</label>
+        <input id="pricePerTech" type="number" inputmode="decimal" placeholder="e.g. 99">
+      </div>
+
+      <div class="roi-field roi-hidden" id="avgTechsField">
+        <label>Avg technicians per MSP you close</label>
+        <input id="avgTechs" type="number" inputmode="numeric" placeholder="e.g. 8">
+      </div>
+
+      <div class="roi-field">
+        <label>Demo booking rate per event (percent of attendees)</label>
+        <select id="demoRatePct"></select>
+      </div>
+
+      <div class="roi-field">
+        <label>Close rate from demos (percent)</label>
+        <select id="closeRatePct"></select>
+      </div>
+
+      <div class="roi-field">
+        <label>Events modeled</label>
+        <select id="eventCount">
+          <option value="1" selected>1 event</option>
+          <option value="2">2 events</option>
+        </select>
+      </div>
+
+      <div class="roi-field">
+        <label>Event 1 tier</label>
+        <select id="tier1">
+          <option value="7500">Gold ($7,500)</option>
+          <option value="20000">Platinum ($20,000)</option>
+          <option value="30000">Diamond ($30,000)</option>
+        </select>
+      </div>
+
+      <div class="roi-field" id="tier2Wrap">
+        <label>Event 2 tier</label>
+        <select id="tier2">
+          <option value="7500">Gold ($7,500)</option>
+          <option value="20000" selected>Platinum ($20,000)</option>
+          <option value="30000">Diamond ($30,000)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="roi-actions">
+      <button id="runBtn" class="roi-btn" type="button">Run the numbers</button>
+      <button id="resetBtn" class="roi-btn roi-btn-secondary" type="button">Reset</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results" class="roi-results roi-hidden">
+      <div class="roi-section">
+        <div class="roi-section-title">Conversion funnel per event</div>
+        <div class="roi-chart-card">
+          <div class="roi-chart-title">From attendees to deals closed</div>
+          <canvas id="funnelChart" height="130"></canvas>
+        </div>
+      </div>
+
+      <div class="roi-section">
+        <div class="roi-section-title" id="pipelineHeader">Deal pipeline projection across events</div>
+        <div class="roi-chart-card">
+          <div class="roi-chart-title" id="pipelineSubTitle">Deals closed by month</div>
+          <canvas id="pipelineChart" height="140"></canvas>
+        </div>
+      </div>
+
+      <!-- ARR CARDS -->
+      <div class="roi-arr-grid">
+        <div id="arrOrgCard" class="roi-arr-card roi-hidden">
+          <div class="roi-arr-title">ARR visualization per organization pricing</div>
+          <div class="roi-arr-row"><span>Trials closed across modeled events (from funnel)</span><span id="arrOrgTrials">0</span></div>
+          <div class="roi-arr-row"><span>Paying customers (60 percent of trials, rounded)</span><span id="arrOrgPaying">0</span></div>
+          <div class="roi-arr-row"><span>ARR per conversion</span><span id="arrOrgArrPerConv">$0</span></div>
+          <div class="roi-arr-row"><span>ARR per event (average)</span><span id="arrOrgArrPerEvent">$0</span></div>
+          <div class="roi-arr-row"><span>Number of events modeled</span><span id="arrOrgEvents">0</span></div>
+          <div class="roi-arr-row"><span>Total ARR across modeled events</span><span id="arrOrgArrTotal">$0</span></div>
+          <div class="roi-arr-row"><span>Total event spend</span><span id="arrOrgSpendTotal">$0</span></div>
+          <div class="roi-arr-note" id="arrOrgRatioText"></div>
+        </div>
+
+        <div id="arrTechCard" class="roi-arr-card roi-hidden">
+          <div class="roi-arr-title">ARR visualization per technician pricing</div>
+          <div class="roi-arr-row"><span>Trials closed across modeled events (from funnel)</span><span id="arrTechTrials">0</span></div>
+          <div class="roi-arr-row"><span>Paying customers (60 percent of trials, rounded)</span><span id="arrTechPaying">0</span></div>
+          <div class="roi-arr-row"><span>Avg technicians per deal</span><span id="arrTechAvgTechs">0</span></div>
+          <div class="roi-arr-row"><span>ARR per conversion</span><span id="arrTechArrPerConv">$0</span></div>
+          <div class="roi-arr-row"><span>ARR per event (average)</span><span id="arrTechArrPerEvent">$0</span></div>
+          <div class="roi-arr-row"><span>Number of events modeled</span><span id="arrTechEvents">0</span></div>
+          <div class="roi-arr-row"><span>Total ARR across modeled events</span><span id="arrTechArrTotal">$0</span></div>
+          <div class="roi-arr-row"><span>Total event spend</span><span id="arrTechSpendTotal">$0</span></div>
+          <div class="roi-arr-note" id="arrTechRatioText"></div>
+        </div>
+
+        <div id="arrSeatCard" class="roi-arr-card roi-hidden">
+          <div class="roi-arr-title">ARR visualization per seat pricing</div>
+          <div class="roi-arr-row"><span>Trials closed across modeled events (from funnel)</span><span id="arrSeatTrials">0</span></div>
+          <div class="roi-arr-row"><span>Paying customers (60 percent of trials, rounded)</span><span id="arrSeatPaying">0</span></div>
+          <div class="roi-arr-row"><span>ARR per conversion</span><span id="arrSeatArrPerConv">$0</span></div>
+          <div class="roi-arr-row"><span>ARR per event (average)</span><span id="arrSeatArrPerEvent">$0</span></div>
+          <div class="roi-arr-row"><span>Number of events modeled</span><span id="arrSeatEvents">0</span></div>
+          <div class="roi-arr-row"><span>Total ARR across modeled events</span><span id="arrSeatArrTotal">$0</span></div>
+          <div class="roi-arr-row"><span>Total event spend</span><span id="arrSeatSpendTotal">$0</span></div>
+          <div class="roi-arr-note" id="arrSeatRatioText"></div>
+        </div>
+      </div>
+
+      <div class="roi-mini">
+        Assumptions: 175 MSP attendees per event, 70 percent demo show rate, trials to paying conversion at 60 percent.
+        Demo booking rate and close rate are provided by you. Two event model assumes events six months apart and a 7.5
+        percentage point demo rate bump when you move up sponsorship tiers.
+      </div>
+    </div>
+
+    <div id="roiError" class="roi-error roi-hidden"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+  .roi-wrap{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    background: #f5f5f7;
+    padding: 28px 14px;
+  }
+  .roi-card{
+    max-width: 1020px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .roi-header{ padding: 26px 26px 10px; }
+  .roi-eyebrow{
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(0,0,0,.55); margin-bottom: 10px;
+  }
+  .roi-title{ font-size: 26px; line-height: 1.15; margin: 0 0 10px; color: rgba(0,0,0,.92); }
+  .roi-subtitle{ margin: 0; color: rgba(0,0,0,.62); font-size: 15px; line-height: 1.45; max-width: 78ch; }
+
+  .roi-grid{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 14px;
+    padding: 18px 26px 6px;
+  }
+  .roi-field label{ display:block; font-size:12px; color: rgba(0,0,0,.62); margin-bottom: 6px; }
+  .roi-field input, .roi-field select{
+    width:100%;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    outline: none;
+    background:#fff;
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  .roi-field input:focus, .roi-field select:focus{
+    border-color: rgba(0,0,0,0.26);
+    box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
+  }
+
+  .roi-actions{ display:flex; gap:10px; padding: 14px 26px 22px; }
+  .roi-btn{
+    border: 0; border-radius: 12px; padding: 12px 14px; font-size: 14px;
+    cursor:pointer; background: rgba(0,0,0,.92); color:#fff;
+    transition: transform .06s ease, opacity .15s ease;
+    text-decoration:none; display:inline-flex; align-items:center; justify-content:center;
+  }
+  .roi-btn:active{ transform: scale(0.98); }
+  .roi-btn-secondary{ background: rgba(0,0,0,.08); color: rgba(0,0,0,.85); }
+
+  .roi-results{ padding: 0 26px 26px; }
+  .roi-section{ margin-top: 8px; }
+  .roi-section-title{
+    margin: 12px 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(0,0,0,.82);
+  }
+
+  .roi-chart-card{
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 16px;
+    padding: 12px;
+    background: #fff;
+    margin-top: 4px;
+  }
+  .roi-chart-title{
+    font-size: 12px;
+    color: rgba(0,0,0,.62);
+    margin-bottom: 8px;
+  }
+
+  .roi-arr-grid{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .roi-arr-card{
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 16px;
+    padding: 12px;
+    background:#fff;
+    font-size: 13px;
+  }
+  .roi-arr-title{
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: rgba(0,0,0,.9);
+  }
+  .roi-arr-row{
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .roi-arr-row span:last-child{
+    font-weight: 600;
+  }
+  .roi-arr-note{
+    margin-top: 6px;
+    font-size: 12px;
+    color: rgba(0,0,0,.65);
+  }
+
+  .roi-mini{ margin-top: 12px; font-size: 12px; color: rgba(0,0,0,.55); }
+
+  .roi-error{
+    padding: 14px 26px 20px;
+    color: rgba(180, 0, 0, 0.88);
+    font-size: 13px;
+  }
+
+  .roi-hidden{ display:none; }
+
+  @media (max-width: 900px){
+    .roi-grid{ grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+(function(){
+  function boot(fn){
+    if(document.readyState === "loading"){
+      document.addEventListener("DOMContentLoaded", fn);
+    } else {
+      fn();
+    }
+  }
+
+  boot(function(){
+    const ATTENDEES_PER_EVENT = 175;
+    const SHOW_RATE = 0.70;
+    const TRIAL_TO_PAYING_RATE = 0.60;
+    const AVG_TECHS_PER_DEAL = 3;
+    const AVG_SEATS_PER_DEAL = 500;
+    const SEAT_DEPLOY_RATE = 0.70;
+
+    // Event close pattern over 6 months:
+    const EVENT_PATTERN = [4, 3, 2, 1, 1, 0];
+    const EVENT_PATTERN_TOTAL = EVENT_PATTERN.reduce((a,b)=>a+b,0);
+
+    const el = (id) => document.getElementById(id);
+
+    const showError = (msg) => {
+      const errEl = el("roiError");
+      if(!errEl){ alert(msg); return; }
+      errEl.textContent = msg;
+      errEl.classList.remove("roi-hidden");
+    };
+    const clearError = () => {
+      const errEl = el("roiError");
+      if(!errEl) return;
+      errEl.textContent = "";
+      errEl.classList.add("roi-hidden");
+    };
+
+    function money(n){
+      if(!isFinite(n)) return "$0";
+      return n.toLocaleString(undefined, { style:"currency", currency:"USD", maximumFractionDigits:0 });
+    }
+
+    function populatePercentSelect(selectId, start, end, defaultValue){
+      const s = el(selectId);
+      s.innerHTML = "";
+      for(let v = start; v <= end; v++){
+        const opt = document.createElement("option");
+        opt.value = String(v);
+        opt.textContent = v + "%";
+        if(v === defaultValue) opt.selected = true;
+        s.appendChild(opt);
+      }
+    }
+
+    populatePercentSelect("demoRatePct", 15, 30, 25);
+    populatePercentSelect("closeRatePct", 10, 70, 25);
+
+    const pricingModel = el("pricingModel");
+    const pricePerSeatField = el("pricePerSeatField");
+    const pricePerOrgField = el("pricePerOrgField");
+    const pricePerTechField = el("pricePerTechField");
+    const avgTechsField = el("avgTechsField");
+    const eventCountSel = el("eventCount");
+    const tier2Wrap = el("tier2Wrap");
+    const pipelineHeader = el("pipelineHeader");
+    const pipelineSubTitle = el("pipelineSubTitle");
+
+    function setModelFields(){
+      const v = pricingModel.value;
+      pricePerSeatField.classList.toggle("roi-hidden", v !== "per_seat");
+      pricePerOrgField.classList.toggle("roi-hidden", v !== "per_org");
+      pricePerTechField.classList.toggle("roi-hidden", v !== "per_tech");
+      avgTechsField.classList.toggle("roi-hidden", v !== "per_tech");
+    }
+
+    function updateTierVisibility(){
+      const events = parseInt(eventCountSel.value, 10) || 1;
+      tier2Wrap.classList.toggle("roi-hidden", events < 2);
+      if(events === 1){
+        pipelineHeader.textContent = "Deal pipeline projection (6 months)";
+      } else {
+        pipelineHeader.textContent = "Deal pipeline projection across two events (12 months)";
+      }
+    }
+
+    pricingModel.addEventListener("change", setModelFields);
+    eventCountSel.addEventListener("change", updateTierVisibility);
+
+    setModelFields();
+    updateTierVisibility();
+
+    function getNumber(id){
+      const val = parseFloat(el(id).value);
+      return isFinite(val) ? val : 0;
+    }
+
+    function validateInputs(){
+      const model = pricingModel.value;
+      if(model === "per_seat" && getNumber("pricePerSeat") <= 0) return "Please enter your price per seat.";
+      if(model === "per_org" && getNumber("pricePerOrg") <= 0) return "Please enter your price per MSP organization.";
+      if(model === "per_tech"){
+        if(getNumber("pricePerTech") <= 0) return "Please enter your price per technician.";
+        if(getNumber("avgTechs") <= 0) return "Please enter your average technicians per MSP.";
+      }
+      return "";
+    }
+
+    let funnelChart, pipelineChart;
+
+    function ensureCharts(monthsCount){
+      if(funnelChart) funnelChart.destroy();
+      if(pipelineChart) pipelineChart.destroy();
+
+      funnelChart = new Chart(el("funnelChart"), {
+        type: "bar",
+        data: {
+          labels: ["Attendees", "Demos scheduled", "Demos taken", "Deals closed"],
+          datasets: [
+            { label: "Event 1", data: [0, 0, 0, 0] }
+          ]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          plugins: {
+            legend: { display: true, position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: function(ctx){
+                  return ctx.parsed.x.toLocaleString() + " " + ctx.label.toLowerCase();
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { callback: (v)=> v.toLocaleString() }
+            },
+            y: { ticks: { autoSkip: false } }
+          }
+        }
+      });
+
+      const labels = Array.from({length: monthsCount}, (_,i) => "Month " + (i+1));
+
+      pipelineChart = new Chart(el("pipelineChart"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "Deals closed (across events)", data: Array(monthsCount).fill(0) }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx){
+                  return ctx.parsed.y.toLocaleString() + " deals";
+                }
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { autoSkip: false } },
+            y: {
+              beginAtZero: true,
+              ticks: { callback: (v)=> v.toLocaleString() }
+            }
+          }
+        }
+      });
+    }
+
+    function scalePatternToTotal(totalDeals){
+      const len = EVENT_PATTERN.length;
+      const result = Array(len).fill(0);
+      if(totalDeals <= 0 || EVENT_PATTERN_TOTAL <= 0) return result;
+
+      const raw = EVENT_PATTERN.map(v => v * totalDeals / EVENT_PATTERN_TOTAL);
+      const floors = raw.map(Math.floor);
+      const fracs = raw.map((v,i) => ({ idx: i, frac: v - floors[i] }));
+
+      let sumFloors = floors.reduce((a,b)=>a+b,0);
+      let remaining = totalDeals - sumFloors;
+
+      fracs.sort((a,b) => b.frac - a.frac);
+
+      let i = 0;
+      while(remaining > 0){
+        const idx = fracs[i % fracs.length].idx;
+        floors[idx] += 1;
+        remaining -= 1;
+        i += 1;
+      }
+
+      for(let j = 0; j < len; j++){
+        result[j] = floors[j];
+      }
+      return result;
+    }
+
+    const arrOrgCard = el("arrOrgCard");
+    const arrTechCard = el("arrTechCard");
+    const arrSeatCard = el("arrSeatCard");
+
+    function hideArrCards(){
+      arrOrgCard.classList.add("roi-hidden");
+      arrTechCard.classList.add("roi-hidden");
+      arrSeatCard.classList.add("roi-hidden");
+    }
+
+    function tierLevelFromValue(v){
+      if(v >= 30000) return 3;
+      if(v >= 20000) return 2;
+      return 1;
+    }
+
+    function clampDemoRate(r){
+      return Math.max(0.10, Math.min(0.50, r));
+    }
+
+    el("runBtn").addEventListener("click", function(){
+      clearError();
+      hideArrCards();
+
+      const err = validateInputs();
+      if(err){
+        showError(err);
+        return;
+      }
+
+      const model = pricingModel.value;
+      const demoRatePct = parseFloat(el("demoRatePct").value) || 0;
+      const closeRatePct = parseFloat(el("closeRatePct").value) || 0;
+      const baseDemoRate = demoRatePct / 100;
+      const closeRate = closeRatePct / 100;
+
+      const events = parseInt(eventCountSel.value, 10) || 1;
+      const monthsCount = events === 1 ? 6 : 12;
+
+      ensureCharts(monthsCount);
+
+      const tier1Val = parseFloat(el("tier1").value) || 0;
+      const tier2Val = events >= 2 ? (parseFloat(el("tier2").value) || 0) : 0;
+
+      const tier1Level = tierLevelFromValue(tier1Val);
+      const tier2Level = tierLevelFromValue(tier2Val);
+
+      const demoRate1 = clampDemoRate(baseDemoRate);
+      let demoRate2 = demoRate1;
+
+      if(events >= 2){
+        const tierStepsUp = Math.max(0, tier2Level - tier1Level);
+        const bump = 0.075 * tierStepsUp;
+        demoRate2 = clampDemoRate(baseDemoRate + bump);
+      }
+
+      const eventCost1 = tier1Val;
+      const eventCost2 = events >= 2 ? tier2Val : 0;
+      const totalEventSpend = eventCost1 + eventCost2;
+
+      const attendees = ATTENDEES_PER_EVENT;
+
+      // Event 1
+      const demosScheduled1Raw = attendees * demoRate1;
+      const demosTaken1Raw = demosScheduled1Raw * SHOW_RATE;
+      const dealsClosed1Raw = demosTaken1Raw * closeRate;
+      const demosScheduled1 = Math.round(demosScheduled1Raw);
+      const demosTaken1 = Math.round(demosTaken1Raw);
+      const dealsClosed1 = Math.round(dealsClosed1Raw);
+
+      // Event 2
+      let demosScheduled2Raw = 0, demosTaken2Raw = 0, dealsClosed2Raw = 0;
+      let demosScheduled2 = 0, demosTaken2 = 0, dealsClosed2 = 0;
+
+      if(events >= 2){
+        demosScheduled2Raw = attendees * demoRate2;
+        demosTaken2Raw = demosScheduled2Raw * SHOW_RATE;
+        dealsClosed2Raw = demosTaken2Raw * closeRate;
+        demosScheduled2 = Math.round(demosScheduled2Raw);
+        demosTaken2 = Math.round(demosTaken2Raw);
+        dealsClosed2 = Math.round(dealsClosed2Raw);
+      }
+
+      const funnelLabels = ["Attendees", "Demos scheduled", "Demos taken", "Deals closed"];
+      const event1Data = [attendees, demosScheduled1, demosTaken1, dealsClosed1];
+      const event2Data = events >= 2 ? [attendees, demosScheduled2, demosTaken2, dealsClosed2] : [0,0,0,0];
+
+      if(events === 1){
+        funnelChart.data.labels = funnelLabels;
+        funnelChart.data.datasets = [
+          { label: "Event 1", data: event1Data }
+        ];
+      } else {
+        funnelChart.data.labels = funnelLabels;
+        funnelChart.data.datasets = [
+          { label: "Event 1", data: event1Data },
+          { label: "Event 2", data: event2Data }
+        ];
+      }
+      funnelChart.update();
+
+      // Pipeline
+      const monthlyDeals = Array(monthsCount).fill(0);
+
+      if(dealsClosed1 > 0){
+        const pattern1 = scalePatternToTotal(dealsClosed1);
+        for(let i = 0; i < pattern1.length; i++){
+          if(i < monthsCount){
+            monthlyDeals[i] += pattern1[i];
+          }
+        }
+      }
+
+      if(events >= 2 && dealsClosed2 > 0){
+        const pattern2 = scalePatternToTotal(dealsClosed2);
+        for(let i = 0; i < pattern2.length; i++){
+          const idx = 6 + i;
+          if(idx >= 0 && idx < monthsCount){
+            monthlyDeals[idx] += pattern2[i];
+          }
+        }
+      }
+
+      pipelineChart.data.datasets[0].data = monthlyDeals;
+      pipelineChart.update();
+
+      const trialsClosed = dealsClosed1 + dealsClosed2;
+      const payingCustomers = Math.round(trialsClosed * TRIAL_TO_PAYING_RATE);
+
+      // ARR cards
+      if(model === "per_org"){
+        const monthlyPrice = getNumber("pricePerOrg");
+        const arrPerConversion = monthlyPrice * 12;
+        const arrTotal = arrPerConversion * payingCustomers;
+        const arrPerEvent = events > 0 ? arrTotal / events : arrTotal;
+        const ratio = totalEventSpend > 0 ? arrTotal / totalEventSpend : 0;
+        const ratioDisplay = isFinite(ratio) && ratio > 0 ? ratio.toFixed(1) : "0.0";
+
+        el("arrOrgTrials").textContent = trialsClosed.toLocaleString();
+        el("arrOrgPaying").textContent = payingCustomers.toLocaleString();
+        el("arrOrgArrPerConv").textContent = money(arrPerConversion);
+        el("arrOrgArrPerEvent").textContent = money(arrPerEvent);
+        el("arrOrgEvents").textContent = events.toString();
+        el("arrOrgArrTotal").textContent = money(arrTotal);
+        el("arrOrgSpendTotal").textContent = money(totalEventSpend);
+        el("arrOrgRatioText").textContent =
+          "This model is projecting " + ratioDisplay + "x ARR against total event spend.";
+
+        arrOrgCard.classList.remove("roi-hidden");
+      }
+
+      if(model === "per_tech"){
+        const monthlyPrice = getNumber("pricePerTech");
+        const arrPerConversion = monthlyPrice * 12 * AVG_TECHS_PER_DEAL;
+        const arrTotal = arrPerConversion * payingCustomers;
+        const arrPerEvent = events > 0 ? arrTotal / events : arrTotal;
+        const ratio = totalEventSpend > 0 ? arrTotal / totalEventSpend : 0;
+        const ratioDisplay = isFinite(ratio) && ratio > 0 ? ratio.toFixed(1) : "0.0";
+
+        el("arrTechTrials").textContent = trialsClosed.toLocaleString();
+        el("arrTechPaying").textContent = payingCustomers.toLocaleString();
+        el("arrTechAvgTechs").textContent = AVG_TECHS_PER_DEAL.toString();
+        el("arrTechArrPerConv").textContent = money(arrPerConversion);
+        el("arrTechArrPerEvent").textContent = money(arrPerEvent);
+        el("arrTechEvents").textContent = events.toString();
+        el("arrTechArrTotal").textContent = money(arrTotal);
+        el("arrTechSpendTotal").textContent = money(totalEventSpend);
+        el("arrTechRatioText").textContent =
+          "This model is projecting " + ratioDisplay + "x ARR against total event spend.";
+
+        arrTechCard.classList.remove("roi-hidden");
+      }
+
+      if(model === "per_seat"){
+        const monthlyPrice = getNumber("pricePerSeat");
+        const seatDeployments = AVG_SEATS_PER_DEAL * SEAT_DEPLOY_RATE;
+        const arrPerConversion = monthlyPrice * 12 * seatDeployments;
+        const arrTotal = arrPerConversion * payingCustomers;
+        const arrPerEvent = events > 0 ? arrTotal / events : arrTotal;
+        const ratio = totalEventSpend > 0 ? arrTotal / totalEventSpend : 0;
+        const ratioDisplay = isFinite(ratio) && ratio > 0 ? ratio.toFixed(1) : "0.0";
+
+        el("arrSeatTrials").textContent = trialsClosed.toLocaleString();
+        el("arrSeatPaying").textContent = payingCustomers.toLocaleString();
+        el("arrSeatArrPerConv").textContent = money(arrPerConversion);
+        el("arrSeatArrPerEvent").textContent = money(arrPerEvent);
+        el("arrSeatEvents").textContent = events.toString();
+        el("arrSeatArrTotal").textContent = money(arrTotal);
+        el("arrSeatSpendTotal").textContent = money(totalEventSpend);
+        el("arrSeatRatioText").textContent =
+          "This model is projecting " + ratioDisplay + "x ARR against total event spend.";
+
+        arrSeatCard.classList.remove("roi-hidden");
+      }
+
+      el("results").classList.remove("roi-hidden");
+      el("results").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    el("resetBtn").addEventListener("click", function(){
+      clearError();
+      hideArrCards();
+
+      ["pricePerSeat","pricePerOrg","pricePerTech","avgTechs"].forEach(id=>{
+        if(el(id)) el(id).value = "";
+      });
+
+      pricingModel.value = "per_seat";
+      setModelFields();
+
+      populatePercentSelect("demoRatePct", 15, 30, 25);
+      populatePercentSelect("closeRatePct", 10, 70, 25);
+
+      eventCountSel.value = "1";
+      updateTierVisibility();
+
+      el("tier1").value = "7500";
+      el("tier2").value = "20000";
+
+      el("results").classList.add("roi-hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+})();
+</script>
