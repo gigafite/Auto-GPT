@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor ROI Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="roi-wrap">
+    <div class="roi-card">
+      <div class="roi-header">
+        <div class="roi-eyebrow">Vendor ROI Calculator</div>
+        <h2 class="roi-title">Model event pipeline, closed deals, and ARR per sponsorship tier</h2>
+        <p class="roi-subtitle">
+          Select your pricing model, demo booking rate, close rate, and whether you want to model one or two events.
+          This uses 175 MSP attendees per event, a 70 percent demo show rate, and projects deals into a pipeline over
+          six or twelve months. In a two event model, upgrading your sponsorship tier increases your second event demo rate.
+        </p>
+      </div>
+
+      <!-- INPUT GRID -->
+      <div class="roi-grid">
+        <div class="roi-field">
+          <label>Pricing model</label>
+          <select id="pricingModel">
+            <option value="per_seat">Per seat (endpoints)</option>
+            <option value="per_org">Per MSP organization (flat)</option>
+            <option value="per_tech">Per technician (internal MSP staff)</option>
+          </select>
+        </div>
+
+        <div class="roi-field" id="pricePerSeatField">
+          <label>Price per seat (monthly)</label>
+          <input id="pricePerSeat" type="number" inputmode="decimal" placeholder="e.g. 3.50">
+        </div>
+
+        <div class="roi-field roi-hidden" id="pricePerOrgField">
+          <label>Price per MSP organization (monthly)</label>
+          <input id="pricePerOrg" type="number" inputmode="decimal" placeholder="e.g. 499">
+        </div>
+
+        <div class="roi-field roi-hidden" id="pricePerTechField">
+          <label>Price per technician (monthly)</label>
+          <input id="pricePerTech" type="number" inputmode="decimal" placeholder="e.g. 99">
+        </div>
+
+        <div class="roi-field roi-hidden" id="avgTechsField">
+          <label>Avg technicians per MSP you close</label>
+          <input id="avgTechs" type="number" inputmode="numeric" placeholder="e.g. 8">
+        </div>
+
+        <div class="roi-field">
+          <label>Demo booking rate per event (percent of attendees)</label>
+          <select id="demoRatePct"></select>
+        </div>
+
+        <div class="roi-field">
+          <label>Close rate from demos (percent)</label>
+          <select id="closeRatePct"></select>
+        </div>
+
+        <div class="roi-field">
+          <label>Events modeled</label>
+          <select id="eventCount">
+            <option value="1" selected>1 event</option>
+            <option value="2">2 events</option>
+          </select>
+        </div>
+
+        <div class="roi-field">
+          <label>Event 1 tier</label>
+          <select id="tier1">
+            <option value="7500">Gold ($7,500)</option>
+            <option value="20000">Platinum ($20,000)</option>
+            <option value="30000">Diamond ($30,000)</option>
+          </select>
+        </div>
+
+        <div class="roi-field" id="tier2Wrap">
+          <label>Event 2 tier</label>
+          <select id="tier2">
+            <option value="7500">Gold ($7,500)</option>
+            <option value="20000" selected>Platinum ($20,000)</option>
+            <option value="30000">Diamond ($30,000)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BUTTONS -->
+      <div class="roi-actions">
+        <button id="runBtn" class="roi-btn" type="button">Run the numbers</button>
+        <button id="resetBtn" class="roi-btn roi-btn-secondary" type="button">Reset</button>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="results" class="roi-results roi-hidden">
+        <div class="roi-section">
+          <div class="roi-section-title">Conversion funnel per event</div>
+          <div class="roi-chart-card">
+            <div class="roi-chart-title">From attendees to deals closed</div>
+            <canvas id="funnelChart" height="130"></canvas>
+          </div>
+        </div>
+
+        <div class="roi-section">
+          <div class="roi-section-title" id="pipelineHeader">Deal pipeline projection across events</div>
+          <div class="roi-chart-card">
+            <div class="roi-chart-title" id="pipelineSubTitle">Deals closed by month</div>
+            <canvas id="pipelineChart" height="140"></canvas>
+          </div>
+        </div>
+
+        <!-- ARR CARDS -->
+        <div class="roi-arr-grid">
+          <div id="arrOrgCard" class="roi-arr-card roi-hidden">
+            <div class="roi-arr-title">ARR visualization per organization pricing</div>
+            <div class="roi-arr-row"><span>Trials closed across modeled events (from funnel)</span><span id="arrOrgTrials">0</span></div>
+            <div class="roi-arr-row"><span>Paying customers (60 percent of trials, rounded)</span><span id="arrOrgPaying">0</span></div>
+            <div class="roi-arr-row"><span>ARR per conversion</span><span id="arrOrgArrPerConv">$0</span></div>
+            <div class="roi-arr-row"><span>ARR per event (average)</span><span id="arrOrgArrPerEvent">$0</span></div>
+            <div class="roi-arr-row"><span>Number of events modeled</span><span id="arrOrgEvents">0</span></div>
+            <div class="roi-arr-row"><span>Total ARR across modeled events</span><span id="arrOrgArrTotal">$0</span></div>
+            <div class="roi-arr-row"><span>Total event spend</span><span id="arrOrgSpendTotal">$0</span></div>
+            <div class="roi-arr-note" id="arrOrgRatioText"></div>
+          </div>
+
+          <div id="arrTechCard" class="roi-arr-card roi-hidden">
+            <div class="roi-arr-title">ARR visualization per technician pricing</div>
+            <div class="roi-arr-row"><span>Trials closed across modeled events (from funnel)</span><span id="arrTechTrials">0</span></div>
+            <div class="roi-arr-row"><span>Paying customers (60 percent of trials, rounded)</span><span id="arrTechPaying">0</span></div>
+            <div class="roi-arr-row"><span>Avg technicians per deal</span><span id="arrTechAvgTechs">0</span></div>
+            <div class="roi-arr-row"><span>ARR per conversion</span><span id="arrTechArrPerConv">$0</span></div>
+            <div class="roi-arr-row"><span>ARR per event (average)</span><span id="arrTechArrPerEvent">$0</span></div>
+            <div class="roi-arr-row"><span>Number of events modeled</span><span id="arrTechEvents">0</span></div>
+            <div class="roi-arr-row"><span>Total ARR across modeled events</span><span id="arrTechArrTotal">$0</span></div>
+            <div class="roi-arr-row"><span>Total event spend</span><span id="arrTechSpendTotal">$0</span></div>
+            <div class="roi-arr-note" id="arrTechRatioText"></div>
+          </div>
+
+          <div id="arrSeatCard" class="roi-arr-card roi-hidden">
+            <div class="roi-arr-title">ARR visualization per seat pricing</div>
+            <div class="roi-arr-row"><span>Trials closed across modeled events (from funnel)</span><span id="arrSeatTrials">0</span></div>
+            <div class="roi-arr-row"><span>Paying customers (60 percent of trials, rounded)</span><span id="arrSeatPaying">0</span></div>
+            <div class="roi-arr-row"><span>ARR per conversion</span><span id="arrSeatArrPerConv">$0</span></div>
+            <div class="roi-arr-row"><span>ARR per event (average)</span><span id="arrSeatArrPerEvent">$0</span></div>
+            <div class="roi-arr-row"><span>Number of events modeled</span><span id="arrSeatEvents">0</span></div>
+            <div class="roi-arr-row"><span>Total ARR across modeled events</span><span id="arrSeatArrTotal">$0</span></div>
+            <div class="roi-arr-row"><span>Total event spend</span><span id="arrSeatSpendTotal">$0</span></div>
+            <div class="roi-arr-note" id="arrSeatRatioText"></div>
+          </div>
+        </div>
+
+        <div class="roi-mini">
+          Assumptions: 175 MSP attendees per event, 70 percent demo show rate, trials to paying conversion at 60 percent.
+          Demo booking rate and close rate are provided by you. Two event model assumes events six months apart and a 7.5
+          percentage point demo rate bump when you move up sponsorship tiers.
+        </div>
+      </div>
+
+      <div id="roiError" class="roi-error roi-hidden"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="calculator.js"></script>
+</body>
+</html>

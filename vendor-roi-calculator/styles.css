@@ -1,0 +1,227 @@
+/* Global styles */
+.roi-wrap {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background: #f5f5f7;
+  padding: 28px 14px;
+}
+
+.roi-card {
+  max-width: 1020px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+/* Header */
+.roi-header {
+  padding: 26px 26px 10px;
+}
+
+.roi-eyebrow {
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.55);
+  margin-bottom: 10px;
+}
+
+.roi-title {
+  font-size: 26px;
+  line-height: 1.15;
+  margin: 0 0 10px;
+  color: rgba(0,0,0,.92);
+}
+
+.roi-subtitle {
+  margin: 0;
+  color: rgba(0,0,0,.62);
+  font-size: 15px;
+  line-height: 1.45;
+  max-width: 78ch;
+}
+
+/* Input grid */
+.roi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+  padding: 18px 26px 6px;
+}
+
+.roi-field label {
+  display: block;
+  font-size: 12px;
+  color: rgba(0,0,0,.62);
+  margin-bottom: 6px;
+}
+
+.roi-field input,
+.roi-field select {
+  width: 100%;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+.roi-field input:focus,
+.roi-field select:focus {
+  border-color: rgba(0,0,0,0.26);
+  box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
+}
+
+/* Buttons */
+.roi-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px 26px 22px;
+}
+
+.roi-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  background: rgba(0,0,0,.92);
+  color: #fff;
+  transition: transform .06s ease, opacity .15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roi-btn:active {
+  transform: scale(0.98);
+}
+
+.roi-btn-secondary {
+  background: rgba(0,0,0,.08);
+  color: rgba(0,0,0,.85);
+}
+
+/* Results section */
+.roi-results {
+  padding: 0 26px 26px;
+}
+
+.roi-section {
+  margin-top: 8px;
+}
+
+.roi-section-title {
+  margin: 12px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0,0,0,.82);
+}
+
+/* Chart cards */
+.roi-chart-card {
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 12px;
+  background: #fff;
+  margin-top: 4px;
+}
+
+.roi-chart-title {
+  font-size: 12px;
+  color: rgba(0,0,0,.62);
+  margin-bottom: 8px;
+}
+
+/* ARR cards */
+.roi-arr-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.roi-arr-card {
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.roi-arr-title {
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(0,0,0,0.06);
+  color: rgba(0,0,0,.9);
+  font-size: 15px;
+}
+
+.roi-arr-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.roi-arr-row:last-of-type {
+  border-bottom: none;
+  margin-bottom: 12px;
+}
+
+.roi-arr-row span:first-child {
+  color: rgba(0,0,0,.65);
+}
+
+.roi-arr-row span:last-child {
+  font-weight: 600;
+  color: rgba(0,0,0,.92);
+}
+
+.roi-arr-note {
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+/* Small text */
+.roi-mini {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(0,0,0,.55);
+}
+
+/* Error state */
+.roi-error {
+  padding: 14px 26px 20px;
+  color: rgba(180, 0, 0, 0.88);
+  font-size: 13px;
+}
+
+/* Utility classes */
+.roi-hidden {
+  display: none;
+}
+
+/* Responsive design */
+@media (max-width: 900px) {
+  .roi-grid {
+    grid-template-columns: 1fr;
+  }
+}
